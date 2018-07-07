@@ -9,8 +9,9 @@ Persists resources during a single run, so you can query for what you've added.
 
 ## Usage
 
+The goal is to maintain parity with https://api.slack.com/web (and others?) For now:
 - All calls must be POSTs
-- Any data is sent as `application/x-www-form-urlencoded`
+- All arguments must be sent as POST parameters, presented as `application/x-www-form-urlencoded` (this needs to change -- slack has some cases where JSON is fine but others where it's not, part of the value of this stub should be to highlight those edge cases before you get to hitting slack for real.)
 - It doesn't matter if you provide an `Authorization` header: not auth is implemented
 
 See API Calls for a list of implemented calls and their status.

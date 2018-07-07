@@ -7,3 +7,5 @@ EXPOSE 5000
 
 COPY ./server.py /app/
 ENTRYPOINT ["python3", "/app/server.py"]
+
+COPY VERSION .
