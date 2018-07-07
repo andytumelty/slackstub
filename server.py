@@ -5,6 +5,8 @@ import time
 import base64
 import string
 import random
+import logging
+from copy import deepcopy
 
 app = Flask(__name__)
 
@@ -36,7 +38,7 @@ def find_user_by_email(users, email):
         except:
             pass
 
-
+# Initial users list
 users = [
     {
         "color": "757575",
@@ -84,9 +86,12 @@ users = [
     }
 ]
 
+# Initial channels list
 invited = [
 ]
 
+
+# Object used to populate user on invite
 user_template = {
     "color": "9f69e7",
     "deleted": False,
@@ -147,30 +152,35 @@ def auth_test():
 
 @app.route("/api/users.list", methods=['POST'])
 def users_list():
-    response_users = [ u for u in users if not u['deleted']]
-    next_id = None
+    response_users = [u for u in users if not u['deleted']]
 
-    if 'cursor' in request.form.keys():
+    response = {
+        "cache_ts": int(time.time()),
+        "ok": True
+    }
+
+    next_cursor = request.form.get('next_cursor', '')
+    if next_cursor:
         # find user by cursor, go from there
-        user_id = base64.b64decode(request.form['cursor'])
-        index = [u['id'] for u in users].find(user_id)
+        user_id = base64.b64decode(next_cursor).decode('utf-8')
+        index = ['user:' + u['id'] for u in response_users].index(user_id)
+        app.logger.debug('cursor index: {}'.format(index))
         response_users = response_users[index:]
 
     if 'limit' in request.form.keys():
         limit = int(request.form['limit'])
+
         if len(response_users) > limit:
             next_id = response_users[limit]['id']
-        response_users = response_users[:limit-1]
+            response['offset'] = next_id
+            next_cursor = 'user:' + next_id
+            response['response_metadata'] = {'next_cursor': base64.b64encode(next_cursor.encode('utf-8')).decode('utf-8')}
+        else:
+            response['response_metadata'] = {'next_cursor': ''}
 
-    response = {
-        "cache_ts": int(time.time()),
-        "members": response_users,
-        "ok": True
-    }
+        response_users = response_users[:limit]
 
-    if next_id:
-        response['offset'] = next_id
-        response['response_metadata'] = {'next_cursor': base64.b64encode(next_id)}
+    response['members'] = response_users
 
     return jsonify(
         response
@@ -181,7 +191,6 @@ def users_list():
 def users_admin_invite():
     email = request.form['email']
     user_emails = get_emails(users)
-    invited_emails = get_emails(invited)
 
     if email in user_emails:
         return jsonify(
@@ -190,7 +199,7 @@ def users_admin_invite():
                 "ok": False
             }
         )
-    elif email in invited_emails:
+    elif email in invited:
         return jsonify(
             {
                 "error": "already_invited",
@@ -198,10 +207,10 @@ def users_admin_invite():
             }
         )
     else:
-        new_user = user_template.copy()
-        new_user['profile']['email'] = email
-        new_user['id'] = generate_user_id()
-        invited.append(new_user)
+        invited.append(email)
+
+        app.logger.debug('invited: {}'.format(invited))
+
         return jsonify(
             {
                 "ok": True
@@ -224,9 +233,16 @@ def users_admin_set_inactive():
 @app.route("/meta/invite.accept", methods=['POST'])
 def meta_invite_accept():
     email = request.form['email']
-    user = find_user_by_email(invited, email)
-    invited.remove(user)
-    users.append(user)
+    invited.remove(email)
+
+    new_user = deepcopy(user_template)
+    new_user['profile']['email'] = email
+    new_user['id'] = generate_user_id()
+    users.append(new_user)
+
+    app.logger.debug('users: {}'.format(get_emails(users)))
+    app.logger.debug('invited: {}'.format(invited))
+
     return jsonify(
         {
             "ok": True
@@ -236,9 +252,21 @@ def meta_invite_accept():
 
 @app.route("/meta/invite.accept.all", methods=['POST'])
 def meta_invite_accept_all():
-    for user in invited:
-        invited.remove(user)
-        users.append(user)
+    global invited
+    app.logger.debug('invited: {}'.format(invited))
+
+    for email in invited:
+        app.logger.debug('accepting: {}'.format(email))
+        new_user = deepcopy(user_template)
+        new_user['profile']['email'] = email
+        new_user['id'] = generate_user_id()
+        users.append(new_user)
+
+    invited = []
+
+    app.logger.debug('users: {}'.format(get_emails(users)))
+    app.logger.debug('invited: {}'.format(invited))
+
     return jsonify(
         {
             "ok": True
