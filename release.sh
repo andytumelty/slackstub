@@ -36,9 +36,12 @@ echo "Building and releasing image"
 echo ""
 
 docker build . -t $docker_username/$docker_image:latest
+echo ""
 docker tag $docker_username/$docker_image:latest andytumelty/slackstub:$v
 
+echo ""
 docker push $docker_username/$docker_image:latest
+echo ""
 docker push $docker_username/$docker_image:$v
 
 echo ""
