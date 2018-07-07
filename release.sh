@@ -2,9 +2,6 @@
 
 set -e
 
-docker_username='andytumelty'
-docker_image='slackstub'
-
 git_status="$(git status --porcelain)"
 if [ -n "$git_status" ]
 then
@@ -30,19 +27,6 @@ v=$maj.$((min+1)).$patch
 echo "New version: $v"
 
 echo $v > VERSION
-
-echo ""
-echo "Building and releasing image"
-echo ""
-
-docker build . -t $docker_username/$docker_image:latest
-echo ""
-docker tag $docker_username/$docker_image:latest andytumelty/slackstub:$v
-
-echo ""
-docker push $docker_username/$docker_image:latest
-echo ""
-docker push $docker_username/$docker_image:$v
 
 echo ""
 echo "Tagging git"
