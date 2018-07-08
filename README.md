@@ -4,6 +4,8 @@ Slack stub for local development integration testing.
 Persists resources during a single run, so you can query for what you've added.
 `/meta` API calls exist to allow meta calls (API calls to affect API calls,
   e.g. to accept pending invites).
+  
+Available on docker hub at https://hub.docker.com/r/andytumelty/slackstub/
 
 [![asciicast](https://asciinema.org/a/sz25qnLTcPzrigx9OPGHfrIMV.png)](https://asciinema.org/a/sz25qnLTcPzrigx9OPGHfrIMV)
 
