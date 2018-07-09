@@ -173,10 +173,10 @@ def users_list():
         "ok": True
     }
 
-    next_cursor = request.form.get('next_cursor', '')
-    if next_cursor:
+    cursor = request.form.get('cursor', '')
+    if cursor:
         # find user by cursor, go from there
-        user_id = base64.b64decode(next_cursor).decode('utf-8')
+        user_id = base64.b64decode(cursor).decode('utf-8')
         index = ['user:' + u['id'] for u in response_users].index(user_id)
         app.logger.debug('cursor index: {}'.format(index))
         response_users = response_users[index:]
