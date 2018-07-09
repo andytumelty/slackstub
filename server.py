@@ -154,6 +154,20 @@ def auth_test():
 def users_list():
     response_users = [u for u in users if not u['deleted']]
 
+    """
+        members = [
+            {"id": 1},
+            {"id": 2},
+            {"id": 3}
+        ]
+
+        api_call('users.list', data={"limit": 1, "cursor": "base64(user:2)"})
+        > {
+            "members": {"id": 2},
+            "next_cursor": base64(user:3),
+            "offset": base64(user:3)
+        }
+    """
     response = {
         "cache_ts": int(time.time()),
         "ok": True
@@ -172,6 +186,7 @@ def users_list():
 
         if len(response_users) > limit:
             next_id = response_users[limit]['id']
+            response_users = response_users[:limit]
             response['offset'] = next_id
             next_cursor = 'user:' + next_id
             response['response_metadata'] = {'next_cursor': base64.b64encode(next_cursor.encode('utf-8')).decode('utf-8')}
