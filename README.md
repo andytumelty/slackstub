@@ -43,7 +43,7 @@ The flask server will bind to `localhost:5000`.
 |`/api/auth.test`| _None_ | Done -- always succeeds. Warning: A random user_id is generated and returned for each call.|
 |`/api/users.list`| <ul><li>next_cursor (optional)</li><li>limit (optional)</li></ul> | Core functionality done -- no error handling for bad cursors or limits, and maximum limits don't match slack|
 |`/api/users.admin.invite`| *email | Done, plus slack errors for `already_in_team` and `already_invited` |
-|`/api/users.admin.setInactive`| *email | Core functionality done -- this is a paid only feature, that error isn't done yet though. No error handling. |
+|`/api/users.admin.setInactive`| *user (user id) | Core functionality done -- this is a paid only feature, that error isn't done yet though. No error handling. |
 |`/meta/invite.accept`| *email | Accepts invite for the given email. No error handling. |
 |`/meta/invite.accept.all`| _None_ | Accepts all invites. No error handling. |
 

@@ -235,8 +235,12 @@ def users_admin_invite():
 
 @app.route("/api/users.admin.setInactive", methods=['POST'])
 def users_admin_set_inactive():
-    email = request.form['email']
-    user = find_user_by_email(users, email)
+    user_id = request.form['user']
+    for u in users:
+        if u['id'] == user_id:
+            user = u
+            break
+    # FIXME user not found
     user['deleted'] = True
     return jsonify(
         {
