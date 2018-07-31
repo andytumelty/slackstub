@@ -152,7 +152,7 @@ def auth_test():
 
 @app.route("/api/users.list", methods=['POST'])
 def users_list():
-    response_users = [u for u in users if not u['deleted']]
+    response_users = users
 
     """
         members = [
