@@ -6,6 +6,7 @@ import base64
 import string
 import random
 import logging
+import json
 from copy import deepcopy
 
 app = Flask(__name__)
@@ -248,6 +249,46 @@ def users_list():
     return jsonify(
         response
     )
+
+
+# FIXME this should work with GET too
+@app.route("/api/users.profile.get", methods=['POST'])
+def users_profile_get():
+    user_id = request.values['user']
+    user_search = [ u for u in users if u['id'] == user_id ]
+    if user_search:
+        return jsonify({
+            'ok': True,
+            'profile': user_search[0]['profile']
+        })
+    else:
+        # FIXME should this be a response code 404?
+        return jsonify({
+            "ok": False,
+            "error": "user_not_found"
+        })
+
+
+@app.route("/api/users.profile.set", methods=['POST'])
+def users_profile_set():
+    user_id = request.values['user']
+    profile = json.loads(request.values['profile'])
+    user_search = [ u for u in users if u['id'] == user_id ]
+    if user_search:
+        # FIXME don't allow setting email to clash with an existing user
+        # FIXME don't allow updating admin users -- {'ok': False, 'error': 'cannot_update_admin_user'}
+        user_search[0]['profile'].update(profile)
+        return jsonify({
+            'ok': True,
+            'profile': user_search[0]['profile']
+        })
+    else:
+        # FIXME should this be a response code 404?
+        return jsonify({
+            "ok": False,
+            "error": "user_not_found"
+        })
+
 
 # meta methods -- not implemented in Slack API, but used to affect slackstub state
 
