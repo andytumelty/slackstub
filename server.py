@@ -135,6 +135,7 @@ user_template = {
     "updated": 1529499351
 }
 
+# auth.*
 
 @app.route("/api/auth.test", methods=['POST'])
 def auth_test():
@@ -149,6 +150,53 @@ def auth_test():
         }
     )
 
+# users.*
+
+@app.route("/api/users.admin.invite", methods=['POST'])
+def users_admin_invite():
+    email = request.form['email']
+    user_emails = get_emails(users)
+
+    if email in user_emails:
+        return jsonify(
+            {
+                "error": "already_in_team",
+                "ok": False
+            }
+        )
+    elif email in invited:
+        return jsonify(
+            {
+                "error": "already_invited",
+                "ok": False
+            }
+        )
+    else:
+        invited.append(email)
+
+        app.logger.debug('invited: {}'.format(invited))
+
+        return jsonify(
+            {
+                "ok": True
+            }
+        )
+
+
+@app.route("/api/users.admin.setInactive", methods=['POST'])
+def users_admin_set_inactive():
+    user_id = request.form['user']
+    for u in users:
+        if u['id'] == user_id:
+            user = u
+            break
+    # FIXME user not found
+    user['deleted'] = True
+    return jsonify(
+        {
+            "ok": True
+        }
+    )
 
 @app.route("/api/users.list", methods=['POST'])
 def users_list():
@@ -201,53 +249,7 @@ def users_list():
         response
     )
 
-
-@app.route("/api/users.admin.invite", methods=['POST'])
-def users_admin_invite():
-    email = request.form['email']
-    user_emails = get_emails(users)
-
-    if email in user_emails:
-        return jsonify(
-            {
-                "error": "already_in_team",
-                "ok": False
-            }
-        )
-    elif email in invited:
-        return jsonify(
-            {
-                "error": "already_invited",
-                "ok": False
-            }
-        )
-    else:
-        invited.append(email)
-
-        app.logger.debug('invited: {}'.format(invited))
-
-        return jsonify(
-            {
-                "ok": True
-            }
-        )
-
-
-@app.route("/api/users.admin.setInactive", methods=['POST'])
-def users_admin_set_inactive():
-    user_id = request.form['user']
-    for u in users:
-        if u['id'] == user_id:
-            user = u
-            break
-    # FIXME user not found
-    user['deleted'] = True
-    return jsonify(
-        {
-            "ok": True
-        }
-    )
-
+# meta methods -- not implemented in Slack API, but used to affect slackstub state
 
 @app.route("/meta/invite.accept", methods=['POST'])
 def meta_invite_accept():
